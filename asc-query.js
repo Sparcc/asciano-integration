@@ -58,8 +58,8 @@ journalsQuery = 'elementIN' + journals.join(',')
     + '^sys_created_by!=' + user
 	+ '^ORDERBYsys_created_on';
 
-logger.log('Finished Query Field', 'debug');
-logger.log(fieldsQuery, 'debug');
-logger.log(fields.join(','), 'debug');
-logger.log(journalsQuery, 'debug');
-logger.log(journals.join(','), 'debug');
+logger.log('Asciano - Finished Query Field', 'debug');
+logger.log('Asciano - '+fieldsQuery, 'debug');
+logger.log('Asciano - '+fields.join(','), 'debug');
+logger.log('Asciano - '+journalsQuery, 'debug');
+logger.log('Asciano - '+journals.join(','), 'debug');

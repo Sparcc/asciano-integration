@@ -25,8 +25,8 @@ var closedStates = ['3','7'];
 var isNewRecord = current.isNewRecord();
 logger.log('Valid Record: ' + isNewRecord, 'silly');
 
-var gr = new GlideRecord('customer_account');
-gr.get('83978c6b4f958f00439466a01310c7a2');
+var grCust = new GlideRecord('customer_account');
+grCust.get('83978c6b4f958f00439466a01310c7a2');
 
 var states = {
   incident: {
@@ -55,9 +55,9 @@ Default Values
 */
 if (isNewRecord) {
   logger.log('Creating new record in mapping', 'debug');
-  current.account = gr.sys_id.toString();
-  current.contact = gr.primary_contact.toString();
-  current.u_requester_e_mail = gr.primary_contact.email.toString();
+  current.account = grCust.sys_id.toString();
+  current.contact = grCust.primary_contact.toString();
+  current.u_requester_e_mail = grCust.primary_contact.email.toString();
   current.u_external_table = source.sys_class_name.value.toString();
   current.u_zendesk_id = source.number.value.toString();
   current.contact_type = 'integration';
@@ -219,8 +219,8 @@ function priorityMapping(priority) {
 }
 
 function fuzzyGetApplication(field, application) {
-  logger.log('Getting application for ' + application, 'debug');
-  logger.log('Choices: ' + field.getChoices(), 'debug');
+  logger.log('Asciano - Getting application for ' + application, 'debug');
+  logger.log('Asciano - Choices: ' + field.getChoices(), 'debug');
   var choices = field.getChoices();
 
   return findBestMatch(application, choices).toString();
@@ -255,5 +255,5 @@ function fuzzyGetUser(name) {
   return findBestMatch(name, contacts);
 }
 
-logger.log('Finished Inbound Field', 'debug');
-logger.log(JSON.stringify(diff), 'debug');
+logger.log('Asciano - Finished Inbound Field', 'debug');
+logger.log('Asciano - '+JSON.stringify(diff), 'debug');
