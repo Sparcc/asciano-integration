@@ -78,10 +78,16 @@ function runCommonMapping(current, payload) {
 }
 
 function runIncidentMapping(current, payload) {
-    payload.impact = priorityMapping(current.priority.value);
-    payload.urgency = priorityMapping(current.priority.value);
-    //pc('impact', 'priority');
-    //pc('urgency', 'priority');
+	if(fields.indexOf(currentField) != -1 || fields.length == 0) {
+		logger.log('Asciano - Priority Changed, will set incident impact and urgency', 'debug');
+		payload.impact = priorityImpactUrgencyMapping(current.priority.value);
+		payload.urgency = priorityImpactUrgencyMapping(current.priority.value);
+		return true;
+	}
+	else{
+		return false;
+	}
+    
     logger.log("Asciano -  outbound script - " + JSON.stringify(payload), 'debug');
 }
 
@@ -99,7 +105,7 @@ function postIfChanged(current, payload, logger, fields) {
 	};
 }
 
-function priorityMapping(priority) {
+function priorityImpactUrgencyMapping(priority) {
   switch (priority) {
     case '1':
       return 1;
