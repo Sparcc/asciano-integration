@@ -78,7 +78,7 @@ switch (source.sys_class_name.value) {
   case 'u_request':
   logger.log('Asciano inbound - Running u_request Mapping', 'debug');
   
-  logger.log('Asciano inbound - Running u_request Mapping - Values for estimated and actual fields coming in are : '+source.u_estimated_effort +' AND '+source.u_time_card_actual_effort, 'debug');
+  logger.log('Asciano inbound - Running u_request Mapping - Values for estimated and actual fields coming in are : '+source.u_estimated_effort.toString() +' AND '+source.u_time_card_actual_effort.toString(), 'debug');
   
   cd('u_estimated_hours', 'u_estimated_effort');
   cd('u_actual_hours','u_time_card_actual_effort');
@@ -200,11 +200,13 @@ function runChangeTaskMapping() {
 function setEstimatedActual(){
   var estimatedChanged = cd('u_estimated_hours', 'u_estimated_effort');
   if (estimatedChanged) {
+    logger.log('Asciano inbound - Setting the operate case estimated hours!', 'debug');  
     current.u_estimated_hours = source.u_estimated_effort;
   }
   
   var actualChanged = cd('u_actual_hours','u_time_card_actual_effort');
   if (actualChanged) {
+    logger.log('Asciano inbound - Setting the operate case actual hours!', 'debug');    
     current.u_actual_hours = source.u_time_card_actual_effort;
   }
 }
