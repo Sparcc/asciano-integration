@@ -47,7 +47,7 @@ fieldsQuery = 'sys_updated_on>=javascript:gs.dateGenerate("' + date + '","' + ti
 Set fields to only return the fields we are using
 */
 
-fields = ['number', 'sys_id', 'sys_class_name', 'short_description', 'description', 'priority', 'u_service_component', 'u_solution', 'closed_at', 'closed_by', 'u_estimated_effort', 'state'];
+fields = ['number', 'sys_id', 'sys_class_name', 'short_description', 'description', 'priority', 'u_service_component', 'u_solution', 'closed_at', 'closed_by', 'u_estimated_effort', 'u_time_card_actual_effort', 'state'];
 
 /*
 Listen for Journal fields

@@ -46,6 +46,9 @@ switch (current.u_external_table.toString()) {
 	break;
   case 'u_request':
 	logger.log('Asciano outbound - Running u_request Mapping', 'debug');
+    
+    logger.log('Asciano outbound - Running u_request Mapping - Values for estimated and actual fields leaving are : '+current.u_estimated_hours +' AND '+current.u_actual_hours, 'debug');
+    
     runRequestMappingMapping(current, payload);
 	break;
   case 'rm_enhancement':

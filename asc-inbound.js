@@ -77,6 +77,12 @@ switch (source.sys_class_name.value) {
     break;
   case 'u_request':
   logger.log('Asciano inbound - Running u_request Mapping', 'debug');
+  
+  logger.log('Asciano inbound - Running u_request Mapping - Values for estimated and actual fields coming in are : '+source.u_estimated_effort +' AND '+source.u_time_card_actual_effort, 'debug');
+  
+  cd('u_estimated_hours', 'u_estimated_effort');
+  cd('u_actual_hours','u_time_card_actual_effort');
+  
     runRequestMapping();
     break;
   case 'rm_enhancement':
@@ -154,8 +160,7 @@ function runEnhancementMapping() {
   });
 
   setSystem();
-  cd('u_estimated_hours', 'u_estimated_effort');
-  cd('u_actual_hours','u_time_card_actual_effort');
+  setEstimatedActual()
 }
 
 function runIncidentMapping() {
@@ -165,8 +170,9 @@ function runIncidentMapping() {
 
   setSystem();
   setPriority();
-  cd('u_estimated_hours', 'u_estimated_effort');
-  cd('u_actual_hours','u_time_card_actual_effort');
+  setEstimatedActual()
+  
+  
 }
 
 function runDefectMapping() {
@@ -174,8 +180,7 @@ function runDefectMapping() {
     return 3; // Defect
   });
   setPriority();
-  cd('u_estimated_hours', 'u_estimated_effort');
-  cd('u_actual_hours','u_time_card_actual_effort');
+  setEstimatedActual()
 }
 
 function runRequestMapping() {
@@ -183,14 +188,25 @@ function runRequestMapping() {
     return 1; // Defect
   });
   setSystem();
-  cd('u_estimated_hours', 'u_estimated_effort');
-  cd('u_actual_hours','u_time_card_actual_effort');
+  setEstimatedActual()
 }
 
 function runChangeTaskMapping() {
   cd('category', function() {
     return 4; // Defect
   });
+}
+
+function setEstimatedActual(){
+  var estimatedChanged = cd('u_estimated_hours', 'u_estimated_effort');
+  if (estimatedChanged) {
+    current.u_estimated_hours = source.u_estimated_effort;
+  }
+  
+  var actualChanged = cd('u_actual_hours','u_time_card_actual_effort');
+  if (actualChanged) {
+    current.u_actual_hours = source.u_time_card_actual_effort;
+  }
 }
 
 function setSystem() {
