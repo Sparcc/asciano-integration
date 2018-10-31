@@ -72,18 +72,23 @@ Retrieved Values
 runCommonMapping(current, source);
 switch (source.sys_class_name.value) {
   case 'incident':
+  logger.log('Asciano inbound - Running incident Mapping', 'debug');
     runIncidentMapping();
     break;
   case 'u_request':
+  logger.log('Asciano inbound - Running u_request Mapping', 'debug');
     runRequestMapping();
     break;
   case 'rm_enhancement':
+  logger.log('Asciano inbound - Running rm_enhancement Mapping', 'debug');
     runEnhancementMapping();
     break;
   case 'rm_defect':
+  logger.log('Asciano inbound - Running rm_defect Mapping', 'debug');
     runDefectMapping();
     break;
   case 'change_task':
+  logger.log('Asciano inbound - Running change_task Mapping', 'debug');
     runChangeTaskMapping();
     break;
   default:
@@ -148,9 +153,9 @@ function runEnhancementMapping() {
     return 2; // Incident
   });
 
-  cd('u_estimated_effort', 'u_estimated_effort');
-
   setSystem();
+  cd('u_estimated_hours', 'u_estimated_effort');
+  cd('u_actual_hours','u_time_card_actual_effort');
 }
 
 function runIncidentMapping() {
@@ -160,6 +165,8 @@ function runIncidentMapping() {
 
   setSystem();
   setPriority();
+  cd('u_estimated_hours', 'u_estimated_effort');
+  cd('u_actual_hours','u_time_card_actual_effort');
 }
 
 function runDefectMapping() {
@@ -167,7 +174,8 @@ function runDefectMapping() {
     return 3; // Defect
   });
   setPriority();
-  cd('u_estimated_effort', 'u_estimated_effort');
+  cd('u_estimated_hours', 'u_estimated_effort');
+  cd('u_actual_hours','u_time_card_actual_effort');
 }
 
 function runRequestMapping() {
@@ -175,7 +183,8 @@ function runRequestMapping() {
     return 1; // Defect
   });
   setSystem();
-  cd('u_estimated_effort', 'u_estimated_effort');
+  cd('u_estimated_hours', 'u_estimated_effort');
+  cd('u_actual_hours','u_time_card_actual_effort');
 }
 
 function runChangeTaskMapping() {

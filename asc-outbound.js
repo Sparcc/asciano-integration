@@ -41,23 +41,26 @@ var states = {
 runCommonMapping(current, payload);
 switch (current.u_external_table.toString()) {
   case 'incident':
-	logger.log('Asciano - Running Incident Mapping', 'debug');
+	logger.log('Asciano outbound - Running Incident Mapping', 'debug');
     runIncidentMapping(current, payload);
 	break;
   case 'u_request':
-	logger.log('Asciano - Running u_request Mapping', 'debug');
+	logger.log('Asciano outbound - Running u_request Mapping', 'debug');
+    runRequestMappingMapping(current, payload);
 	break;
   case 'rm_enhancement':
-	logger.log('Asciano - Running rm_enhancement Mapping', 'debug');
+	logger.log('Asciano outbound - Running rm_enhancement Mapping', 'debug');
+    runEnhancementMappingMapping(current, payload);
 	break;
   case 'rm_defect':
-	logger.log('Asciano - Running rm_defect Mapping', 'debug');
+	logger.log('Asciano outbound - Running rm_defect Mapping', 'debug');
+    runDefectMappingMapping(current, payload);
 	break;
   case 'change_task':
-	logger.log('Asciano - Running change_task Mapping', 'debug');
+	logger.log('Asciano outbound - Running change_task Mapping', 'debug');
 	break;
   default:
-	logger.log('Asciano - No Mapping for ' + current.u_external_table.toString(), 'debug');
+	logger.log('Asciano outbound - No Mapping for ' + current.u_external_table.toString(), 'debug');
 }
 
 function runCommonMapping(current, payload) {
@@ -68,6 +71,7 @@ function runCommonMapping(current, payload) {
   pc('close_notes', 'u_solution');
   pc('closed_at', 'closed_at');
   pc('closed_by', 'closed_by', gs.getUserName());
+  
 	
   logger.log('Asciano - Checking for state mapping. Current State (' + current.state.toString() + ') in ' + JSON.stringify(states[current.u_external_table.toString()]), 'silly');
   var map = states[current.u_external_table.toString()];
@@ -77,18 +81,25 @@ function runCommonMapping(current, payload) {
   }
 }
 
+function runEnhancementMapping(current, payload) {
+    pc('u_estimated_hours','u_estimated_effort');
+    pc('u_actual_hours','u_time_card_actual_effort');
+}
+
 function runIncidentMapping(current, payload) {
-	if(fields.indexOf(currentField) != -1 || fields.length == 0) {
-		logger.log('Asciano - Priority Changed, will set incident impact and urgency', 'debug');
-		payload.impact = priorityImpactUrgencyMapping(current.priority.value);
-		payload.urgency = priorityImpactUrgencyMapping(current.priority.value);
-		return true;
-	}
-	else{
-		return false;
-	}
-    
-    logger.log("Asciano -  outbound script - " + JSON.stringify(payload), 'debug');
+    pc('priority');
+    pc('u_estimated_hours','u_estimated_effort');
+    pc('u_actual_hours','u_time_card_actual_effort');
+}
+
+function runDefectMapping(current, payload) {
+    pc('u_estimated_hours','u_estimated_effort');
+    pc('u_actual_hours','u_time_card_actual_effort');
+}
+
+function runRequestMapping(current, payload) {
+    pc('u_estimated_hours','u_estimated_effort');
+    pc('u_actual_hours','u_time_card_actual_effort');
 }
 
 function postIfChanged(current, payload, logger, fields) {
@@ -103,19 +114,4 @@ function postIfChanged(current, payload, logger, fields) {
 		logger.log('Asciano - Field NOT Changed', 'silly');
 		return false;
 	};
-}
-
-function priorityImpactUrgencyMapping(priority) {
-  switch (priority) {
-    case '1':
-      return 1;
-    case '2':
-      return 1;
-    case '3':
-      return 2;
-    case '4':
-      return 3;
-    default:
-      return 3;
-  }
 }
