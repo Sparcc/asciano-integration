@@ -11,10 +11,53 @@ The following objects are passed into the script to use:
 var fields = current.u_migrate_fields && current.u_migrate_fields.toString().split(',') || [];
 var pc = postIfChanged(current, payload, logger, fields);
 
-/*
-	State Mapping
-*/
+// Current (RXP) to Payload (Asciano) state mapping values
 var states = {
+  incident: {
+    '1': '1', //New
+    '2': '-11', // Work in Progress - Awaiting 3rd Party
+    '13': '-11', //System Testing - Awaiting 3rd party 
+    '14': '-11', //UAT - Awaiting Awaiting 3rd Party
+    '15': '-20', //Monitoring to Monitoring
+    '24': '-10', //Client Hold - Waiting Customer
+    '6': '6' //Resolved
+  },
+  u_request: {
+    '1': '1', //New
+    '2': '-11', //Work in Progress - Awaiting 3rd Party
+    '13': '-11', //System Testing - Awaiting 3rd Party
+    '14': '-11', //UAT - Awaiting 3rd Party
+    '23': '2', //Client Action Required - In Progress
+    '24': '-10', //Client Hold - Awaiting Customer
+    '6': '6' //Resolved
+  },
+  rm_enhancement: {
+    '10': '-5', //Under Review - Work In Progress
+    '2': '-5', //Work In Progress  - In Development
+    '23': '8', //Client Action Required - On Hold
+    '24': '8', //Pending Client Hold - On Hold
+    '13': '31', //System Testing - Ready SIT - 
+    '14': '-4', //UAT - Ready UAT - 
+    '40': '33', //Ready for Release - Ready PROD - 
+    '7': '7' //Cancelled
+  },
+  rm_defect: {
+    '-5': '2', //In Development - Work In Progress
+    '8': '23', //On Hold - Client Action Required
+    '10': '13', //Ready SIT - System Testing
+    '11': '14', //Ready UAT - UAT
+    '6': '40' //Ready PROD - Ready for Release
+  },
+  change_task: {
+    '1': '1', //Open - New
+    '2': '10', //In Progress - Under Review
+    '-5': '23', //On Hold - Client Action Required
+    '3': '6' //Completed - Resolved
+  }
+};
+
+// Closed States
+var closedStates = {
   incident: {
     '3': '7', //Closed
 	'7': '7'
@@ -45,19 +88,16 @@ switch (current.u_external_table.toString()) {
     runIncidentMapping(current, payload);
 	break;
   case 'u_request':
-	logger.log('Asciano outbound - Running u_request Mapping', 'debug');
-    
-    logger.log('Asciano outbound - Running u_request Mapping - Values for estimated and actual fields leaving are : '+current.u_estimated_hours +' AND '+current.u_actual_hours, 'debug');
-    
-    runRequestMappingMapping(current, payload);
+	logger.log('Asciano outbound - Running u_request Mapping', 'debug'); 
+    runRequestMapping(current, payload);
 	break;
   case 'rm_enhancement':
 	logger.log('Asciano outbound - Running rm_enhancement Mapping', 'debug');
-    runEnhancementMappingMapping(current, payload);
+    runEnhancementMapping(current, payload);
 	break;
   case 'rm_defect':
 	logger.log('Asciano outbound - Running rm_defect Mapping', 'debug');
-    runDefectMappingMapping(current, payload);
+    runDefectMapping(current, payload);
 	break;
   case 'change_task':
 	logger.log('Asciano outbound - Running change_task Mapping', 'debug');
@@ -75,13 +115,30 @@ function runCommonMapping(current, payload) {
   pc('closed_at', 'closed_at');
   pc('closed_by', 'closed_by', gs.getUserName());
   
-	
+  //State mapping then
+  if (Object.keys(states[current.u_external_table.toString()])
+      .indexOf(current.state.value) !== -1) {
+    //check mapped value against current and then set payload
+    pc('state', function() {
+        logger.log('Asciano - Current state mapping from RXP to Asciano:'
+        + '\nTable = ' + current.u_external_table.toString()
+        + '\nCurrentState = ' + current.state.value
+        + '\nPayloadState = ' + states[current.u_external_table.toString()][current.state.value]
+        ,'debug');
+        
+        // Return mapped value
+        return states[current.u_external_table.toString()][current.state.value];
+        });
+    );
+  }
+  /*
   logger.log('Asciano - Checking for state mapping. Current State (' + current.state.toString() + ') in ' + JSON.stringify(states[current.u_external_table.toString()]), 'silly');
   var map = states[current.u_external_table.toString()];
   if(map && map[current.state.toString()]) {
 	logger.log('Asciano - State mapping found', 'silly');
     pc('state', 'state', map[current.state.toString()]);
   }
+  */
 }
 
 function runEnhancementMapping(current, payload) {
@@ -106,8 +163,11 @@ function runRequestMapping(current, payload) {
 }
 
 function postIfChanged(current, payload, logger, fields) {
+    
 	return function(currentField, payloadField, overrideValue) {
 		logger.log("Asciano - Checking if field '" + currentField + "' changed", 'silly');
+        
+        //Check if different
 		if(fields.indexOf(currentField) != -1 || fields.length == 0) {
 			logger.log('Asciano - Field Changed', 'silly');
 			payload[payloadField||currentField] = overrideValue || current[currentField].toString();
