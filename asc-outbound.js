@@ -120,6 +120,8 @@ function runCommonMapping(current, payload) {
       .indexOf(current.state.value) !== -1) {
     //check mapped value against current and then set payload
     pc('state', function() {
+        
+        // Logs
         logger.log('Asciano - Current state mapping from RXP to Asciano:'
         + '\nTable = ' + current.u_external_table.toString()
         + '\nCurrentState = ' + current.state.value
@@ -129,7 +131,6 @@ function runCommonMapping(current, payload) {
         // Return mapped value
         return states[current.u_external_table.toString()][current.state.value];
         });
-    );
   }
   /*
   logger.log('Asciano - Checking for state mapping. Current State (' + current.state.toString() + ') in ' + JSON.stringify(states[current.u_external_table.toString()]), 'silly');

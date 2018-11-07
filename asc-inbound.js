@@ -192,7 +192,7 @@ function runCommonMapping(current, source) {
     
   // Closed
   // Only check if the current state is closed as asciano prepopulate some of the information in the backend
-  logger.log('Current record is closed? (' + current.state.toString() + ' in [' + ascClosedStates.join() + '])', 'silly');]
+  logger.log('Current record is closed? (' + current.state.toString() + ' in [' + ascClosedStates.join() + '])', 'silly');
   // If there is a mapping for our closed states...
   if (Object.keys(ascClosedStates[source.sys_class_name.value]).indexOf(current.state.value) !== -1) {
   //if(ascClosedStates.indexOf(current.state.toString() !== -1)) {
