@@ -228,7 +228,7 @@ function runEnhancementMapping() {
   });
 
   setSystem();
-  setEstimatedActual()
+  //setEstimatedActual()
 }
 
 function runIncidentMapping() {
@@ -238,7 +238,7 @@ function runIncidentMapping() {
 
   setSystem();
   setPriority();
-  setEstimatedActual()
+  //setEstimatedActual()
   
   
 }
@@ -248,7 +248,7 @@ function runDefectMapping() {
     return 3; // Defect
   });
   setPriority();
-  setEstimatedActual()
+  //setEstimatedActual()
 }
 
 function runRequestMapping() {
@@ -256,7 +256,7 @@ function runRequestMapping() {
     return 1; // Defect
   });
   setSystem();
-  setEstimatedActual()
+  //setEstimatedActual()
 }
 
 function runChangeTaskMapping() {

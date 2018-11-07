@@ -107,7 +107,7 @@ switch (current.u_external_table.toString()) {
 }
 
 function runCommonMapping(current, payload) {
-  logger.log('Asciano - Running common mapping', 'debug');
+  logger.log('Asciano outbound - Running common mapping', 'debug');
   payload.u_integration_id = current.number.toString();
   pc('short_description');
 
@@ -119,10 +119,10 @@ function runCommonMapping(current, payload) {
   if (Object.keys(states[current.u_external_table.toString()])
       .indexOf(current.state.value) !== -1) {
     //check mapped value against current and then set payload
-    pc('state', function() {
+    pc('state', 'state', function() {
         
         // Logs
-        logger.log('Asciano - Current state mapping from RXP to Asciano:'
+        logger.log('Asciano outbound - Current state mapping from RXP to Asciano:'
         + '\nTable = ' + current.u_external_table.toString()
         + '\nCurrentState = ' + current.state.value
         + '\nPayloadState = ' + states[current.u_external_table.toString()][current.state.value]
@@ -133,10 +133,10 @@ function runCommonMapping(current, payload) {
         });
   }
   /*
-  logger.log('Asciano - Checking for state mapping. Current State (' + current.state.toString() + ') in ' + JSON.stringify(states[current.u_external_table.toString()]), 'silly');
+  logger.log('Asciano outbound - Checking for state mapping. Current State (' + current.state.toString() + ') in ' + JSON.stringify(states[current.u_external_table.toString()]), 'silly');
   var map = states[current.u_external_table.toString()];
   if(map && map[current.state.toString()]) {
-	logger.log('Asciano - State mapping found', 'silly');
+	logger.log('Asciano outbound - State mapping found', 'silly');
     pc('state', 'state', map[current.state.toString()]);
   }
   */
@@ -166,16 +166,16 @@ function runRequestMapping(current, payload) {
 function postIfChanged(current, payload, logger, fields) {
     
 	return function(currentField, payloadField, overrideValue) {
-		logger.log("Asciano - Checking if field '" + currentField + "' changed", 'silly');
+		logger.log("Asciano outbound - Checking if field '" + currentField + "' changed", 'silly');
         
         //Check if different
 		if(fields.indexOf(currentField) != -1 || fields.length == 0) {
-			logger.log('Asciano - Field Changed', 'silly');
+			logger.log('Asciano outbound - Field Changed', 'silly');
 			payload[payloadField||currentField] = overrideValue || current[currentField].toString();
-            logger.log("Asciano -  outbound script payload - " + JSON.stringify(payload), 'debug');
+            logger.log("Asciano outbound -  outbound script payload - " + JSON.stringify(payload), 'debug');
 			return true;
 		}
-		logger.log('Asciano - Field NOT Changed', 'silly');
+		logger.log('Asciano outbound - Field NOT Changed', 'silly');
 		return false;
 	};
 }
