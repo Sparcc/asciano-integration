@@ -86,16 +86,16 @@ var ascClosedStates =
 {
   incident: {
     '3': '7' //Closed
-  {,
+  },
   u_request: {
     '3': '7' //Closed
-  {,
+  },
   rm_enhancement: {
     '40': '3' //Closed Complete
-  {,
+  },
   rm_defect: {
     '6': '3' //Closed Complete - Resolved
-  {,
+  },
   change_task: {
     '3': '3' //Closed - Closed
   }
