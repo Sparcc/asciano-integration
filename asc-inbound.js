@@ -167,12 +167,13 @@ function runCommonMapping(current, source) {
     logger.log('Asciano - Running state mapping', 'silly');
     
     // Check if mapped value is the same in RXP
-    cd('state', function() {
+    cd('state', function() {  
+      var mappedValue = states[source.sys_class_name.value][source.state.value];
       logger.log('Asciano - Current state mapping from Asciano to RXP: ' + source.sys_class_name.value + ' = ' +
-      states[source.sys_class_name.value][source.state.value],'silly');
+      mappedValue,'silly');
       
       // Return mapped value
-      return states[source.sys_class_name.value][source.state.value];
+      return mappedValue;
     });
     
   }
