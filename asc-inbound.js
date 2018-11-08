@@ -192,11 +192,10 @@ function runCommonMapping(current, source) {
     
   // Closed
   // Only check if the current state is closed as asciano prepopulate some of the information in the backend
-  logger.log('Current record is closed? (' + current.state.toString() + ' in [' + ascClosedStates.join() + '])', 'silly');
   // If there is a mapping for our closed states...
   if (Object.keys(ascClosedStates[source.sys_class_name.value]).indexOf(current.state.value) !== -1) {
   //if(ascClosedStates.indexOf(current.state.toString() !== -1)) {
-	  logger.log('State is closed', 'silly');
+	  logger.log('State is closed', 'silly'); 
       
       // Close note check
 	  cd('close_notes', 'u_solution');
@@ -215,7 +214,7 @@ function runCommonMapping(current, source) {
 		cd('closed_by',function() {
 			return current.closed_by.getDisplayValue();
 		}, function() {
-		  return fuzzyGetUser(source.closed_by.display_value) || current.closed_by.getDisplayValue();
+		  return fuzzyGetUser(source.closed_by.display_value, 'Asciano') || current.closed_by.getDisplayValue();
 		});
 	  }
   }
@@ -321,12 +320,12 @@ function fuzzyGetApplication(field, application) {
   return findBestMatch(application, choices).toString();
 }
 
-function fuzzyGetUser(name) {
+function fuzzyGetUser(name,company) {
   /*
   Client Users
   */
   var grUsers = new GlideRecord('customer_contact');
-  grUsers.addQuery('company', gr.sys_id.toString());
+  grUsers.addQuery('company.name', company);
   grUsers.addQuery('active', true);
   grUsers.query();
 

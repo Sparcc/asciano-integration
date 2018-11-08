@@ -115,22 +115,19 @@ function runCommonMapping(current, payload) {
   pc('closed_at', 'closed_at');
   pc('closed_by', 'closed_by', gs.getUserName());
   
-  //State mapping then
-  if (Object.keys(states[current.u_external_table.toString()])
-      .indexOf(current.state.value) !== -1) {
-    //check mapped value against current and then set payload
-    pc('state', 'state', function() {
-        
-        // Logs
-        logger.log('Asciano outbound - Current state mapping from RXP to Asciano:'
-        + '\nTable = ' + current.u_external_table.toString()
-        + '\nCurrentState = ' + current.state.value
-        + '\nPayloadState = ' + states[current.u_external_table.toString()][current.state.value]
-        ,'debug');
-        
-        // Return mapped value
-        return states[current.u_external_table.toString()][current.state.value];
-        });
+  logger.log('Asciano outbound:'
+  + '\nWe are mapping to - '+current.u_external_table.toString()
+  + '\nState value of current is - '+current.state
+  + '\nState is type of - '+typeof(current.state)
+  + '\nState value is - '+current.state.value
+  + '\nState value to set payload is- '+states[current.u_external_table.toString()][current.state.toString()]
+  , 'debug');
+  
+  // State mapping
+  // Check if there is a mapped value first
+  if (Object.keys(states[current.u_external_table.toString()]).indexOf(current.state.toString()) !== -1) {
+    //check unmapped value (need to change this) against current and then set payload
+    pc('state', 'state', states[current.u_external_table.toString()][current.state.toString()]);
   }
   /*
   logger.log('Asciano outbound - Checking for state mapping. Current State (' + current.state.toString() + ') in ' + JSON.stringify(states[current.u_external_table.toString()]), 'silly');
