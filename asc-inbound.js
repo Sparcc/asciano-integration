@@ -21,34 +21,85 @@ logger.log('Running Asciano Inbound Field', 'debug');
 var helper = new global.IntegrationRESTHelper();
 var cd = helper.simpleDiff(current, source, diff, logger); //commonDiff(current, source, diff, logger);
 var findBestMatch = helper.FindBestMatchInListFunction(logger);
-var closedStates = ['3','7'];
+//var ascClosedStates = ['3','7'];
 var isNewRecord = current.isNewRecord();
 logger.log('Valid Record: ' + isNewRecord, 'silly');
 
 var grCust = new GlideRecord('customer_account');
 grCust.get('83978c6b4f958f00439466a01310c7a2');
 
+// Source (Asciano) to current (RXP) state mapping values
 var states = {
   incident: {
-    '7': '3' //Closed
+    '1': '1', //New
+    '2': '2', //In Progress - Work in Progress
+    '-11': '2', //Awaiting 3rd Party - Work in Progress
+    '-20': '15', //Monitoring to Monitoring
+    //'2': '15', //In Progress - Client Action Required - Can't accept this mapping
+    '-10': '24', //Waiting Customer - Client Hold
+    '6': '6' //Resolved
+    //'7': '3' //Closed
   },
   u_request: {
-    '7': '3' //Closed
+    '1': '1', //New
+    '2': '2', //In Progress - Work in Progress
+    '-11': '2', // Awaiting 3rd Party - Work In Progress
+    //'2': '15', /In Progress - Client Action Required - Can't accept this mapping
+    '-10': '24', //Awaiting Customer = Client Hold
+    '6': '6' // Resolved
+    //'7': '3' //Closed
   },
   rm_enhancement: {
-    '3': '3', //Closed Complete
+    //'-5': '10', //In Progress/In Development - Under Review - Can't accept this mapping
+    '-5': '2', //In Development - Work In Progress/In
+    '11': '23', //Client Action Required
+    //'11': '24', //Pending Client Hold - Can't accept this mapping
+    '31': '13', //Ready SIT - System Testing
+    '-4': '14', //Ready UAT - UAT
+    '33': '40', //Ready PROD - Ready for Release
     '7': '7' //Cancelled
+    //'3': '40' //Closed Complete
   },
   rm_defect: {
-    '3': '3', //Closed Complete
-    '7': '7' //Cancelled
+    //'-5': '10', //In Progress/In Development - Under Review - Can't accept this mapping
+    '-5': '2', //In Development - Work In Progress
+    '8': '23', //On Hold - Client Action Required
+    //'8': '24', //On Hold - Pending Client Hold - Can't accept this mapping
+    '10': '13', //Ready SIT - System Testing
+    '11': '14', //Ready UAT - UAT
+    '6': '40' //Ready PROD - Ready for Release
+    //'3': '6' //Closed Complete - Resolved
   },
   change_task: {
-    '3': '3', // Closed Complete
-    '4': '3', // Closed Incomplete
-    '7': '3' // Closed Skipped
+    '1': '1', //Open - New
+    '2': '10', //In Progress - Under Review
+    '-5': '23', //On Hold - Client Action Required
+    //'-5': '23', //On Hold - Pending Client Hold - Can't accept this mapping
+    //'-5': '23', //On Hold - Work In Progress - Can't accept this mapping
+    '3': '6' //Completed - Resolved
+    //'3': '3' //Closed - Closed
   }
 };
+
+//current to source mapping
+var ascClosedStates = 
+{
+  incident: {
+    '3': '7' //Closed
+  },
+  u_request: {
+    '3': '7' //Closed
+  },
+  rm_enhancement: {
+    '40': '3' //Closed Complete
+  },
+  rm_defect: {
+    '6': '3' //Closed Complete - Resolved
+  },
+  change_task: {
+    '3': '3' //Closed - Closed
+  }
+}
 
 /*
 Default Values
@@ -101,6 +152,8 @@ switch (source.sys_class_name.value) {
 }
 
 function runCommonMapping(current, source) {
+    
+  // Description mapping
   logger.log('Running Common Mapping', 'debug');
   cd('short_description', 'short_description');
   var descriptionChanged = cd('description', 'description');
@@ -108,33 +161,47 @@ function runCommonMapping(current, source) {
     current.u_description = source.description.value.replace(/<br>|<br\/>/, '\n');
   }
 
-  // State
+  // State mapping
+  // Check if source is mapped
   if (Object.keys(states[source.sys_class_name.value]).indexOf(source.state.value) !== -1) {
-    logger.log('Running state mapping', 'silly');
-    cd('state', function() {
-      logger.log(
-        'Current state mapping: ' +
-          source.sys_class_name.value +
-          ' = ' +
-          states[source.sys_class_name.value][source.state.value],
-        'silly'
-      );
-      return states[source.sys_class_name.value][source.state.value];
+    logger.log('Asciano - Running state mapping', 'silly');
+    
+    // Check if mapped value is the same in RXP
+    cd('state', function() {  
+      var mappedValue = states[source.sys_class_name.value][source.state.value];
+      logger.log('Asciano - Current state mapping from Asciano to RXP: ' + source.sys_class_name.value + ' = ' +
+      mappedValue,'silly');
+      
+      // Return mapped value
+      return mappedValue;
     });
-  } else if(closedStates.indexOf(current.state.toString() !== -1)) {
-	  // As there is only mapping for closed/cancelled it means the current record must be open. If this is the case make sure that it is not set to closed or cancelled in our system.
-	  cd('state', function() {
-		  return 1;
-	  });
-	  logger.log('Mapped closed state to new', 'silly');
+    
+  }
+  
+  // If there is a mapping for our closed states...
+  else if (Object.keys(ascClosedStates[source.sys_class_name.value]).indexOf(current.state.value) !== -1) {
+  //else if(ascClosedStates.indexOf(current.state.toString() !== -1)) {
+	// As there is only mapping for closed/cancelled it means the current record must be open. 
+    // If this is the case make sure that it is not set to closed or cancelled in our system.
+	cd('state', function() {
+	  return 1;
+	});
+	logger.log('Mapped closed state to new', 'silly');
   }
 	
+    
+    
   // Closed
   // Only check if the current state is closed as asciano prepopulate some of the information in the backend
-  logger.log('Current record is closed? (' + current.state.toString() + ' in [' + closedStates.join() + '])', 'silly');
-  if(closedStates.indexOf(current.state.toString() !== -1)) {
-	  logger.log('State is closed', 'silly');
+  // If there is a mapping for our closed states...
+  if (Object.keys(ascClosedStates[source.sys_class_name.value]).indexOf(current.state.value) !== -1) {
+  //if(ascClosedStates.indexOf(current.state.toString() !== -1)) {
+	  logger.log('State is closed', 'silly'); 
+      
+      // Close note check
 	  cd('close_notes', 'u_solution');
+      
+      // Closed at check
 	  cd('closed_at', function() {
 		  return helper.GetLocalDate(integration.u_timezone.toString(), current.closed_at.toString());
 	  }, function() {
@@ -142,12 +209,13 @@ function runCommonMapping(current, source) {
 		logger.log('result is ' + helper.GetLocalDate(integration.u_timezone.toString(), source.closed_at.value), 'silly');
 		return helper.GetLocalDate(integration.u_timezone.toString(), source.closed_at);
 	  });
-
+      
+      // Closed by check
 	  if (source.closed_by.display_value.length > 0) {
 		cd('closed_by',function() {
 			return current.closed_by.getDisplayValue();
 		}, function() {
-		  return fuzzyGetUser(source.closed_by.display_value) || current.closed_by.getDisplayValue();
+		  return fuzzyGetUser(source.closed_by.display_value, 'Asciano') || current.closed_by.getDisplayValue();
 		});
 	  }
   }
@@ -160,7 +228,7 @@ function runEnhancementMapping() {
   });
 
   setSystem();
-  setEstimatedActual()
+  //setEstimatedActual()
 }
 
 function runIncidentMapping() {
@@ -170,7 +238,7 @@ function runIncidentMapping() {
 
   setSystem();
   setPriority();
-  setEstimatedActual()
+  //setEstimatedActual()
   
   
 }
@@ -180,7 +248,7 @@ function runDefectMapping() {
     return 3; // Defect
   });
   setPriority();
-  setEstimatedActual()
+  //setEstimatedActual()
 }
 
 function runRequestMapping() {
@@ -188,7 +256,7 @@ function runRequestMapping() {
     return 1; // Defect
   });
   setSystem();
-  setEstimatedActual()
+  //setEstimatedActual()
 }
 
 function runChangeTaskMapping() {
@@ -253,12 +321,12 @@ function fuzzyGetApplication(field, application) {
   return findBestMatch(application, choices).toString();
 }
 
-function fuzzyGetUser(name) {
+function fuzzyGetUser(name,company) {
   /*
   Client Users
   */
   var grUsers = new GlideRecord('customer_contact');
-  grUsers.addQuery('company', gr.sys_id.toString());
+  grUsers.addQuery('company.name', company);
   grUsers.addQuery('active', true);
   grUsers.query();
 
