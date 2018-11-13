@@ -110,6 +110,7 @@ function runCommonMapping(current, payload) {
   logger.log('Asciano outbound - Running common mapping', 'debug');
   payload.u_integration_id = current.number.toString();
   pc('short_description');
+  pc('description');
 
   pc('close_notes', 'u_solution');
   pc('closed_at', 'closed_at');
