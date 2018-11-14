@@ -154,13 +154,13 @@ switch (source.sys_class_name.value) {
 function runCommonMapping(current, source) {
     
   // Description mapping
-  /* description mapping is only to be RXP to Asciano
   logger.log('Running Common Mapping', 'debug');
   cd('short_description', 'short_description');
+  cd('description', 'description');
   var descriptionChanged = cd('description', 'description');
   if (descriptionChanged) {
     current.u_description = source.description.value.replace(/<br>|<br\/>/, '\n');
-  }*/
+  }
 
   // State mapping
   // Check if source is mapped
